@@ -7,14 +7,35 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setErrorMsg("");
     setLoading(true);
-    const supabase = createClient();
-    await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: `${window.location.origin}/home` } });
-    setSent(true);
-    setLoading(false);
+
+    try {
+      const normalizedEmail = email.trim().toLowerCase();
+      if (!normalizedEmail.endsWith("@sfsu.edu")) {
+        setErrorMsg("Please use your @sfsu.edu email.");
+        return;
+      }
+
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOtp({
+        email: normalizedEmail,
+        options: { emailRedirectTo: `${window.location.origin}/home` },
+      });
+
+      if (error) {
+        setErrorMsg(error.message || "Could not send sign-in link.");
+        return;
+      }
+
+      setSent(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   if (sent) {
@@ -35,6 +56,11 @@ export default function LoginForm() {
         required
         className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
       />
+      {errorMsg && (
+        <p className="text-sm text-red-700 bg-red-50 rounded-lg p-3">
+          {errorMsg}
+        </p>
+      )}
       <button
         type="submit"
         disabled={loading}
