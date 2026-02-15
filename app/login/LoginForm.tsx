@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginForm() {
@@ -13,6 +14,7 @@ export default function LoginForm() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const router = useRouter();
 
   const allowPasswordLogin = true;
 
@@ -45,7 +47,8 @@ export default function LoginForm() {
             setErrorMsg(error.message || "Could not sign in.");
             return;
           }
-          setSent(true);
+          router.push("/home");
+          router.refresh();
           return;
         }
 
