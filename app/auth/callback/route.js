@@ -56,6 +56,9 @@ export async function GET(request) {
           id: user.id,
           email: user.email,
           full_name: user.user_metadata?.full_name ?? null,
+          contact_email_visible: true,
+          contact_phone_visible: false,
+          contact_instagram_visible: false,
         },
         { onConflict: "id" }
       );

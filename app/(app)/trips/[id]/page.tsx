@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { RequestJoinForm } from "./RequestJoinForm";
+import { DriverRequestsPanel } from "./DriverRequestsPanel";
+import { DeleteTripButton } from "./DeleteTripButton";
 
 function formatDateTime(iso: string) {
   const d = new Date(iso);
@@ -38,7 +40,7 @@ export default async function TripDetailPage({
   const { data: trip } = await supabase
     .from("trips")
     .select(
-      "id, from_text, to_text, depart_at, seats_total, seats_taken, notes, driver_id, driver:profiles(full_name, email, phone)"
+      "id, from_text, to_text, depart_at, seats_total, seats_taken, notes, driver_id, driver:profiles(full_name, email, phone, instagram_handle, contact_email_visible, contact_phone_visible, contact_instagram_visible)"
     )
     .eq("id", params.id)
     .single();
@@ -56,13 +58,24 @@ export default async function TripDetailPage({
     .eq("passenger_id", user.id)
     .maybeSingle();
 
+  const { data: pendingRequests } = isDriver
+    ? await supabase
+        .from("join_requests")
+        .select("id, status, passenger:profiles(full_name, email)")
+        .eq("trip_id", params.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: true })
+    : { data: [] };
+
   const isAccepted = joinRequest?.status === "accepted";
   const canSeeContacts = isDriver || isAccepted;
 
   const { data: acceptedPassengers } = canSeeContacts
     ? await supabase
         .from("join_requests")
-        .select("id, passenger:profiles(full_name, email, phone)")
+        .select(
+          "id, passenger:profiles(full_name, email, phone, instagram_handle, contact_email_visible, contact_phone_visible, contact_instagram_visible)"
+        )
         .eq("trip_id", params.id)
         .eq("status", "accepted")
     : { data: [] };
@@ -81,9 +94,12 @@ export default async function TripDetailPage({
         </Link>
 
         <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6">
-          <h1 className="text-2xl font-semibold text-slate-800">
-            {trip.from_text} → {trip.to_text}
-          </h1>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <h1 className="text-2xl font-semibold text-slate-800">
+              {trip.from_text} → {trip.to_text}
+            </h1>
+            {isDriver && <DeleteTripButton tripId={trip.id} />}
+          </div>
           <p className="text-slate-500 text-sm mt-2">
             {formatDateTime(trip.depart_at)} · {seatsLeft} seats left · Driver{" "}
             {firstName(driver?.full_name ?? null)}
@@ -117,6 +133,13 @@ export default async function TripDetailPage({
           </div>
         )}
 
+        {isDriver && (
+          <DriverRequestsPanel
+            tripId={trip.id}
+            requests={pendingRequests ?? []}
+          />
+        )}
+
         {canSeeContacts && (
           <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6 space-y-4">
             <h2 className="text-lg font-semibold text-slate-800">
@@ -125,8 +148,21 @@ export default async function TripDetailPage({
             <div className="text-sm text-slate-700">
               <p className="font-medium text-slate-800">Driver</p>
               <p>{driver?.full_name ?? "Driver"}</p>
-              <p>{driver?.email ?? "No email provided"}</p>
-              <p>{driver?.phone ?? "No phone provided"}</p>
+              <p>
+                {(driver?.contact_email_visible ?? true)
+                  ? driver?.email ?? "No email provided"
+                  : "Email hidden"}
+              </p>
+              <p>
+                {(driver?.contact_phone_visible ?? false)
+                  ? driver?.phone ?? "No phone provided"
+                  : "Phone hidden"}
+              </p>
+              <p>
+                {(driver?.contact_instagram_visible ?? false)
+                  ? driver?.instagram_handle ?? "No Instagram provided"
+                  : "Instagram hidden"}
+              </p>
             </div>
 
             <div className="text-sm text-slate-700">
@@ -142,8 +178,21 @@ export default async function TripDetailPage({
                     return (
                       <li key={r.id} className="rounded-lg bg-slate-50 p-3">
                         <p>{passenger?.full_name ?? "Passenger"}</p>
-                        <p>{passenger?.email ?? "No email provided"}</p>
-                        <p>{passenger?.phone ?? "No phone provided"}</p>
+                        <p>
+                          {(passenger?.contact_email_visible ?? true)
+                            ? passenger?.email ?? "No email provided"
+                            : "Email hidden"}
+                        </p>
+                        <p>
+                          {(passenger?.contact_phone_visible ?? false)
+                            ? passenger?.phone ?? "No phone provided"
+                            : "Phone hidden"}
+                        </p>
+                        <p>
+                          {(passenger?.contact_instagram_visible ?? false)
+                            ? passenger?.instagram_handle ?? "No Instagram provided"
+                            : "Instagram hidden"}
+                        </p>
                       </li>
                     );
                   })}

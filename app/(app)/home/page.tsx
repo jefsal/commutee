@@ -55,7 +55,11 @@ export default async function HomePage() {
 
   const profile = profileRes.data;
   const driverTrips = driverTripsRes.data ?? [];
-  const myRequests = requestsRes.data ?? [];
+  const rawRequests = requestsRes.data ?? [];
+  const myRequests = rawRequests.map((r) => ({
+    ...r,
+    trip: Array.isArray(r.trip) ? r.trip?.[0] ?? null : r.trip ?? null,
+  }));
   const recentTrips = recentTripsRes.data ?? [];
 
   const tripIds = driverTrips.map((t) => t.id);
