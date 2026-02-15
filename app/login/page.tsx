@@ -26,6 +26,16 @@ export default async function LoginPage() {
         <LoginForm />
 
         <div className="pt-1 space-y-2">
+          <details className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            <summary className="cursor-pointer font-medium">
+              SFSU email notice
+            </summary>
+            <p className="mt-2">
+              Microsoft is currently blocking emails from our domain, so
+              @sfsu.edu magic links may not arrive. Gmail and @sjsu.edu emails
+              work. We are working on a fix.
+            </p>
+          </details>
           <p className="text-slate-400 text-xs text-center">
             Currently available to SFSU students only.
           </p>
