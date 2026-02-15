@@ -81,7 +81,7 @@ export default async function TripDetailPage({
     ? await supabase
         .from("join_requests")
         .select(
-          "id, passenger:profiles(full_name, email, phone, instagram_handle, contact_email_visible, contact_phone_visible, contact_instagram_visible)"
+          "id, passenger_id, passenger:profiles(full_name, email, phone, instagram_handle, contact_email_visible, contact_phone_visible, contact_instagram_visible)"
         )
         .eq("trip_id", params.id)
         .eq("status", "accepted")
@@ -111,6 +111,7 @@ export default async function TripDetailPage({
             {formatDateTime(trip.depart_at)} · {seatsLeft} seats left · Driver{" "}
             {firstName(driver?.full_name ?? null)}
           </p>
+          <p className="text-xs text-slate-400 mt-2">Trip ID: {trip.id}</p>
           {trip.notes && (
             <p className="text-slate-700 text-sm mt-4 whitespace-pre-line">
               {trip.notes}
@@ -155,6 +156,7 @@ export default async function TripDetailPage({
             <div className="text-sm text-slate-700">
               <p className="font-medium text-slate-800">Driver</p>
               <p>{driver?.full_name ?? "Driver"}</p>
+              <p className="text-xs text-slate-400">ID: {trip.driver_id}</p>
               <p>
                 {(driver?.contact_email_visible ?? true)
                   ? driver?.email ?? "No email provided"
@@ -185,6 +187,9 @@ export default async function TripDetailPage({
                     return (
                       <li key={r.id} className="rounded-lg bg-slate-50 p-3">
                         <p>{passenger?.full_name ?? "Passenger"}</p>
+                        <p className="text-xs text-slate-400">
+                          ID: {r.passenger_id}
+                        </p>
                         <p>
                           {(passenger?.contact_email_visible ?? true)
                             ? passenger?.email ?? "No email provided"

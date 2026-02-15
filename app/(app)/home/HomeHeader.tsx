@@ -36,9 +36,9 @@ export function HomeHeader({ profile }: Props) {
       <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link href="/home" className="font-bold text-slate-800 text-lg">
-            SFSU Carpools
+            commutee
           </Link>
-          <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+          <span className="text-xs font-medium text-[#231161] bg-[#c99700]/10 px-2 py-0.5 rounded-full border border-[#c99700]/40">
             Verified SFSU Student
           </span>
         </div>
