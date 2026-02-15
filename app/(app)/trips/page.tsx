@@ -6,7 +6,7 @@ export default async function TripsPage() {
   const supabase = await createClient();
   const now = new Date().toISOString();
 
-  const { data: trips } = await supabase
+  const { data: tripsRaw } = await supabase
     .from("trips")
     .select(
       "id, from_text, to_text, depart_at, seats_total, seats_taken, driver:profiles(full_name)"
@@ -14,6 +14,10 @@ export default async function TripsPage() {
     .gte("depart_at", now)
     .order("depart_at", { ascending: true })
     .limit(50);
+  const trips = (tripsRaw ?? []).map((t) => ({
+    ...t,
+    driver: Array.isArray(t.driver) ? t.driver?.[0] ?? null : t.driver ?? null,
+  }));
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -31,7 +35,7 @@ export default async function TripsPage() {
           Find a ride that matches your route and schedule.
         </p>
 
-        <TripsList initialTrips={trips ?? []} />
+        <TripsList initialTrips={trips} />
       </div>
     </div>
   );

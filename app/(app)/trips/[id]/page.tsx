@@ -58,7 +58,7 @@ export default async function TripDetailPage({
     .eq("passenger_id", user.id)
     .maybeSingle();
 
-  const { data: pendingRequests } = isDriver
+  const { data: pendingRequestsRaw } = isDriver
     ? await supabase
         .from("join_requests")
         .select("id, status, passenger:profiles(full_name, email)")
@@ -66,6 +66,13 @@ export default async function TripDetailPage({
         .eq("status", "pending")
         .order("created_at", { ascending: true })
     : { data: [] };
+
+  const pendingRequests = (pendingRequestsRaw ?? []).map((r) => ({
+    ...r,
+    passenger: Array.isArray(r.passenger)
+      ? r.passenger?.[0] ?? null
+      : r.passenger ?? null,
+  }));
 
   const isAccepted = joinRequest?.status === "accepted";
   const canSeeContacts = isDriver || isAccepted;
@@ -136,7 +143,7 @@ export default async function TripDetailPage({
         {isDriver && (
           <DriverRequestsPanel
             tripId={trip.id}
-            requests={pendingRequests ?? []}
+            requests={pendingRequests}
           />
         )}
 

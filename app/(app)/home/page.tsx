@@ -60,7 +60,11 @@ export default async function HomePage() {
     ...r,
     trip: Array.isArray(r.trip) ? r.trip?.[0] ?? null : r.trip ?? null,
   }));
-  const recentTrips = recentTripsRes.data ?? [];
+  const rawRecentTrips = recentTripsRes.data ?? [];
+  const recentTrips = rawRecentTrips.map((t) => ({
+    ...t,
+    driver: Array.isArray(t.driver) ? t.driver?.[0] ?? null : t.driver ?? null,
+  }));
 
   const tripIds = driverTrips.map((t) => t.id);
   let pendingCountMap: Record<string, number> = {};

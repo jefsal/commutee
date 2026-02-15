@@ -19,7 +19,12 @@ type RequestRow = {
     from_text: string;
     to_text: string;
     depart_at: string;
-  } | null;
+  } | {
+    id: string;
+    from_text: string;
+    to_text: string;
+    depart_at: string;
+  }[] | null;
 };
 
 function formatDateTime(iso: string) {
@@ -42,6 +47,18 @@ function StatusChip({ status }: { status: string }) {
       {status}
     </span>
   );
+}
+
+function normalizeTrip(
+  trip: RequestRow["trip"]
+): {
+  id: string;
+  from_text: string;
+  to_text: string;
+  depart_at: string;
+} | null {
+  if (!trip) return null;
+  return Array.isArray(trip) ? trip[0] ?? null : trip;
 }
 
 export function ActivitySection({
@@ -111,16 +128,22 @@ export function ActivitySection({
             ) : (
               passengerRequests.map((r) => (
                 <li key={r.id} className="px-4 py-3">
-                  <Link href={r.trip ? `/trips/${r.trip.id}` : "#"} className="block hover:bg-slate-50 -mx-4 px-4 py-2 rounded-lg">
+                  {(() => {
+                    const trip = normalizeTrip(r.trip);
+                    return (
+                      <Link
+                        href={trip ? `/trips/${trip.id}` : "#"}
+                        className="block hover:bg-slate-50 -mx-4 px-4 py-2 rounded-lg"
+                      >
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-sm font-medium text-slate-800 truncate">
-                        {r.trip ? `${r.trip.from_text} → ${r.trip.to_text}` : "Trip"}
+                        {trip ? `${trip.from_text} → ${trip.to_text}` : "Trip"}
                       </span>
                       <StatusChip status={r.status} />
                     </div>
-                    {r.trip && (
+                    {trip && (
                       <p className="text-xs text-slate-500 mt-0.5">
-                        {formatDateTime(r.trip.depart_at)}
+                        {formatDateTime(trip.depart_at)}
                       </p>
                     )}
                     {r.status === "accepted" && (
@@ -128,7 +151,9 @@ export function ActivitySection({
                         Contact info available in trip details
                       </p>
                     )}
-                  </Link>
+                      </Link>
+                    );
+                  })()}
                 </li>
               ))
             )}
