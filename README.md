@@ -1,40 +1,49 @@
-# commutee
+# Commutee
 
-Find others to carpool.
+Find SFSU carpool companions. Drivers can post trips, passengers can request to join, and contact info is shared after acceptance.
 
 ## Run locally
 
 ```bash
-npm start
+npm install
+npm run dev
 ```
 
-Then open http://localhost:3000 in your browser.
+Then open `http://localhost:3000`.
 
-Or open `index.html` directly in the browser (no server needed for this setup).
+## Environment variables
 
-## Project structure
+Create `.env.local`:
 
 ```
-commutee/
-  index.html      # Single page, entry point
-  css/style.css   # Styles
-  js/app.js       # Main JavaScript (vanilla – no framework)
-  package.json    # Optional: run `npm start` for a local server
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+NEXT_PUBLIC_ALLOW_PASSWORD_LOGIN=true
 ```
 
-## Java → JavaScript quick reference (for Java devs)
+Notes:
+- `NEXT_PUBLIC_ALLOW_PASSWORD_LOGIN=true` enables password auth for dev to avoid email rate limits. Remove for production.
+- Magic link callback route: `/auth/callback`
 
-| Java | JavaScript |
-|------|------------|
-| `String s = "hi";` | `let s = "hi";` or `const s = "hi";` |
-| `int x = 5;` | `let x = 5;` (no type – JS has number for int/float) |
-| `System.out.println(x);` | `console.log(x);` |
-| `==` (equals) | Prefer `===` (strict equality; no auto-convert) |
-| `boolean` | `true` / `false` (same) |
-| `List<String>` | `const list = ["a", "b"];` or `[]` |
-| `Map<K,V>` | `const map = { key: "value" };` or `{}` |
-| `public void doStuff() { }` | `function doStuff() { }` or `const doStuff = () => { };` |
-| `obj.method()` | `obj.method()` (same) |
-| `null` | `null` (and JS has `undefined` for “no value”) |
+## Supabase setup
 
-**Tips:** Use `const` by default, `let` when you reassign. Semicolons are optional but fine to keep. All your DOM work will use `document.getElementById(...)`, `element.addEventListener(...)`, etc. – see `js/app.js` for a small example.
+Redirect URLs in Supabase Auth:
+- `http://localhost:3000/auth/callback`
+- `https://your-domain.com/auth/callback`
+
+Run the one-time migration in Supabase SQL editor:
+
+```
+supabase_migrations_2026_02_15_add_contact_fields.sql
+```
+
+Recommended RLS policies on `profiles` (drivers/passengers can see accepted members):
+- `drivers_can_read_accepted_passenger_profiles`
+- `accepted_members_can_read_each_other_profiles`
+- `accepted_passengers_can_read_driver_profile`
+
+## Core flows
+
+- Driver posts trip and accepts/declines requests
+- Passenger requests to join and sees status
+- Contact info visible only after acceptance (email visible by default)
