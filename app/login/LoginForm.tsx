@@ -14,9 +14,7 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const allowPasswordLogin =
-    (process.env.NEXT_PUBLIC_ALLOW_PASSWORD_LOGIN || "").toLowerCase() ===
-    "true";
+  const allowPasswordLogin = true;
 
   const canUsePassword = useMemo(
     () => allowPasswordLogin && mode === "password",
